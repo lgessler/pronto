@@ -1,16 +1,21 @@
+import logging
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Tuple, Dict
-import logging
+from typing import Dict, List, Tuple
 
 from onf_parser import Section
 from onf_parser.models import Sentence, SpeakerInformation
 
-from pronto.consts import BOOKS_S2L
+from pronto.consts import BOOKS_S2L, ONTONOTES_BLACKLIST
 from pronto.reading import Book, Verse
 
-
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class AlignedVerse:
+    verse: Verse
+    ontonotes_sentences: List[Sentence]
 
 
 def _parse_ontonotes_time(s: str):
@@ -39,29 +44,28 @@ def _index_ontonotes(
                 book, start, stop = _parse_ontonotes_speaker_info(sentence.speaker_information)
                 book = book.replace("_", " ")
                 for chapter, verse, _ in start + stop:
-                    if sentence not in index[book][chapter][verse]:
+                    chapter = int(chapter)
+                    verse = int(verse)
+                    if (
+                        verse not in index[book][chapter].keys() or sentence not in index[book][chapter][verse]
+                    ) and not (book, chapter, verse) in ONTONOTES_BLACKLIST:
                         index[book][chapter][verse].append(sentence)
 
     return index
 
 
-def _index_bible_data(bible_data: List[Book]) -> Dict[str, Dict[str, Dict[str, List[Sentence]]]]:
+def _index_bible_data(bible_data: List[Book]) -> Dict[str, Dict[str, Dict[str, Verse]]]:
     index = defaultdict(lambda: defaultdict(dict))
     for book in bible_data:
-        book_id = BOOKS_S2L[book.id]
+        book_id = BOOKS_S2L[book.id] if book.id in BOOKS_S2L else book.id
         for chapter in book.chapters:
             for verse in chapter.verses:
-                index[book_id][chapter.id][verse.id] = verse
+                if (book_id, chapter.id, verse.id) not in ONTONOTES_BLACKLIST:
+                    index[book_id][chapter.id][verse.id] = verse
     return index
 
 
-@dataclass
-class AlignedVerse:
-    verse: Verse
-    ontonotes_sentences: List[Tuple[str, Sentence]]
-
-
-def align_verses(ontonotes_data: List[Tuple[str, List[Section]]], bible_data: List[Book]):
+def align_verses(ontonotes_data: List[Tuple[str, List[Section]]], bible_data: List[Book]) -> List[AlignedVerse]:
     ontonotes_verse_index = _index_ontonotes(ontonotes_data)
     bible_verse_index = _index_bible_data(bible_data)
 
@@ -71,10 +75,36 @@ def align_verses(ontonotes_data: List[Tuple[str, List[Section]]], bible_data: Li
     only_ontonotes_books = ontonotes_books.difference(bible_books)
 
     if len(only_ontonotes_books) > 0:
-        logger.warning(f"The following books were not found in the Bible translation:"
-                       f" {only_ontonotes_books}.\n\nDoes this look right? Consider editing consts.py.")
+        logger.warning(
+            f"The following books were not found in the Bible translation:"
+            f" {only_ontonotes_books}.\n\nDoes this look right? Consider editing consts.py."
+        )
 
-    print(common_books)
+    aligned = []
+    misses = []
+    for book in common_books:
+        bible_chapters = bible_verse_index[book].keys()
+        ontonotes_chapters = ontonotes_verse_index[book].keys()
+        if bible_chapters != ontonotes_chapters:
+            logger.warning(f"Chapters do not match for {book}! Bible: {bible_chapters}; Onto: {ontonotes_chapters}")
+        for chapter in ontonotes_chapters:
+            bible_verses = bible_verse_index[book][chapter].keys()
+            ontonotes_verses = ontonotes_verse_index[book][chapter].keys()
+            if bible_verses != ontonotes_verses:
+                logger.warning(
+                    f"Verses do not match for {book} {chapter}!"
+                    f" Missing in OntoNotes: {set(bible_verses).difference(set(ontonotes_verses))}"
+                    f" Missing in Bible: {set(ontonotes_verses).difference(set(bible_verses))}"
+                )
+            for verse_id, verses in ontonotes_verse_index[book][chapter].items():
+                if (
+                    book in bible_verse_index
+                    and chapter in bible_verse_index[book]
+                    and verse_id in bible_verse_index[book][chapter]
+                ):
+                    aligned.append(AlignedVerse(bible_verse_index[book][chapter][verse_id], verses))
+                else:
+                    misses.append((chapter, book, verse_id))
 
-
-    assert False
+    logger.info(f"Aligned {len(aligned)} verses; failed to align {len(misses)} from OntoNotes verses")
+    return aligned
