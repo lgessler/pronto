@@ -19,8 +19,9 @@ local bible_path = "data/lat-clementine.tsv";
         process_verses: {
             type: "pronto.steps::generate_task_data",
             verses: { type: "ref", ref: "aligned_verses" },
+            output_dir: "output",
             task_specs: [
-                { type: "foo", output_dir: "output/foo" }
+                { type: "foo" }
             ]
         }
     }

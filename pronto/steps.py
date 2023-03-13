@@ -1,3 +1,6 @@
+from os import makedirs
+from pathlib import Path
+from shutil import rmtree
 from typing import List, Tuple
 
 from onf_parser import Section, parse_files
@@ -43,6 +46,9 @@ class GenerateTaskData(Step):
     DETERMINISTIC = True
     CACHEABLE = True
 
-    def run(self, task_specs: List[TaskSpec], verses: List[AlignedVerse]):
+    def run(self, task_specs: List[TaskSpec], verses: List[AlignedVerse], output_dir: str):
+        rmtree(output_dir, ignore_errors=True)
+        makedirs(output_dir)
         for s in task_specs:
-            s.process(verses)
+            s.process(verses, str(Path(f"{output_dir}") / Path(s.__class__.__name__)))
+        assert False

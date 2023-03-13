@@ -1,10 +1,10 @@
 from typing import List
 
-from tango.common import Registrable
-
 from pronto.aligning import AlignedVerse
+from pronto.tasks.spec import TaskSpec
 
 
-class TaskSpec(Registrable):
+@TaskSpec.register("foo")
+class Foo(TaskSpec):
     def process(self, verses: List[AlignedVerse], output_dir: str) -> None:
-        raise NotImplemented()
+        ...
