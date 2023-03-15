@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
 from onf_parser import Section
-from onf_parser.models import Sentence, SpeakerInformation
+from onf_parser.models import Coref, Sentence, SpeakerInformation
 
 from pronto.consts import BOOKS_S2L, ONTONOTES_BLACKLIST
 from pronto.reading import Book, Verse
@@ -14,8 +14,45 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AlignedVerse:
+    book: str
+    chapter: int
+    verse_id: int
     verse: Verse
     ontonotes_sentences: List[Sentence]
+
+    @property
+    def is_one_to_one(self) -> bool:
+        """
+        True iff there is exactly one corresponding OntoNotes sentence
+        """
+        return len(self.ontonotes_sentences) == 1
+
+    @property
+    def is_cross_verse(self) -> bool:
+        """
+        True iff any OntoNotes sentence crosses over into neighboring verses
+        """
+        if hasattr(self, "__is_cross_verse"):
+            return self.__is_cross_verse
+        else:
+            for sentence in self.ontonotes_sentences:
+                _, start, stop = _parse_ontonotes_speaker_info(sentence.speaker_information)
+                for _, verse, _ in start + stop:
+                    verse = int(verse)
+                    if verse != self.verse_id:
+                        self.__is_cross_verse = True
+                        return True
+            self.__is_cross_verse = False
+            return False
+
+    @property
+    def mentions(self) -> List[Coref]:
+        mentions = []
+        for sentence in self.ontonotes_sentences:
+            for leaf in sentence.leaves:
+                if leaf.coref is not None:
+                    mentions.append(leaf.coref)
+        return mentions
 
 
 def _parse_ontonotes_time(s: str):
@@ -102,7 +139,9 @@ def align_verses(ontonotes_data: List[Tuple[str, List[Section]]], bible_data: Li
                     and chapter in bible_verse_index[book]
                     and verse_id in bible_verse_index[book][chapter]
                 ):
-                    aligned.append(AlignedVerse(bible_verse_index[book][chapter][verse_id], verses))
+                    aligned.append(
+                        AlignedVerse(book, chapter, verse_id, bible_verse_index[book][chapter][verse_id], verses)
+                    )
                 else:
                     misses.append((chapter, book, verse_id))
 

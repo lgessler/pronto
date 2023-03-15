@@ -1,12 +1,11 @@
 from os import makedirs
-from pathlib import Path
 from shutil import rmtree
 from typing import List, Tuple
 
 from onf_parser import Section, parse_files
 from tango import DillFormat, Step
 
-from pronto.aligning import align_verses, AlignedVerse
+from pronto.aligning import AlignedVerse, align_verses
 from pronto.reading import Book, read_bible_tsv
 from pronto.tasks.spec import TaskSpec
 
@@ -37,7 +36,7 @@ class AlignVerses(Step):
     CACHEABLE = True
     FORMAT = DillFormat()
 
-    def run(self, ontonotes_data: List[Tuple[str, List[Section]]], bible_data: List[Book]):
+    def run(self, ontonotes_data: List[Tuple[str, List[Section]]], bible_data: List[Book]) -> List[AlignedVerse]:
         return align_verses(ontonotes_data, bible_data)
 
 
@@ -50,5 +49,5 @@ class GenerateTaskData(Step):
         rmtree(output_dir, ignore_errors=True)
         makedirs(output_dir)
         for s in task_specs:
-            s.process(verses, str(Path(f"{output_dir}") / Path(s.__class__.__name__)))
+            s.process(verses, output_dir)
         assert False

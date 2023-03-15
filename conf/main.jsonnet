@@ -1,5 +1,6 @@
 local ontonotes_path = "data/ontonotes/english/annotations/pt/";
 local bible_path = "data/lat-clementine.tsv";
+local output_dir = "output/lat";
 
 {
     steps: {
@@ -19,10 +20,11 @@ local bible_path = "data/lat-clementine.tsv";
         process_verses: {
             type: "pronto.steps::generate_task_data",
             verses: { type: "ref", ref: "aligned_verses" },
-            output_dir: "output",
             task_specs: [
-                { type: "foo" }
-            ]
+                "foo",
+                "nonpronominal_mentions",
+            ],
+            output_dir: output_dir,
         }
     }
 }
