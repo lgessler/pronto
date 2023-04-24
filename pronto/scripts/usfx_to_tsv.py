@@ -1,3 +1,4 @@
+import csv
 import sys
 
 import bs4
@@ -14,7 +15,8 @@ if __name__ == "__main__":
     for h in xml.find_all("h"):
         h.decompose()
 
-    with open(sys.argv[2], "w") as f:
+    with open(sys.argv[2], "w", newline="") as f:
+        writer = csv.writer(f, delimiter="\t", lineterminator="\n")
         book = None
         chapter = None
         verse = None
@@ -29,7 +31,10 @@ if __name__ == "__main__":
                 verse = child.attrs["id"]
             elif name == "ve":
                 if book is not None and chapter is not None and verse is not None:
-                    f.write("\t".join([book, chapter, verse, verse_buffer]) + "\n")
+                    verse_buffer.replace("\n", " ")
+                    verse_buffer.replace("\t", " ")
+                    verse_buffer = verse_buffer.strip()
+                    writer.writerow([book, chapter, verse, verse_buffer])
                 verse = None
                 verse_buffer = ""
             elif name is None and not isinstance(child, bs4.element.ProcessingInstruction):
