@@ -128,10 +128,12 @@ def align_verses(ontonotes_data: List[Tuple[str, List[Section]]], bible_data: Li
             bible_verses = bible_verse_index[book][chapter].keys()
             ontonotes_verses = ontonotes_verse_index[book][chapter].keys()
             if bible_verses != ontonotes_verses:
+                onto_diff = set(bible_verses).difference(set(ontonotes_verses))
+                bible_diff = set(ontonotes_verses).difference(set(bible_verses))
                 logger.warning(
                     f"Verses do not match for {book} {chapter}!"
-                    f" Missing in OntoNotes: {set(bible_verses).difference(set(ontonotes_verses))}"
-                    f" Missing in Bible: {set(ontonotes_verses).difference(set(bible_verses))}"
+                    + (f" Missing in OntoNotes: {onto_diff}" if len(onto_diff) > 0 else "")
+                    + (f" Missing in Bible: {bible_diff}" if len(bible_diff) > 0 else "")
                 )
             for verse_id, verses in ontonotes_verse_index[book][chapter].items():
                 if (
