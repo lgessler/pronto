@@ -1,6 +1,7 @@
 local ontonotes_path = "data/ontonotes/english/annotations/pt/";
-local bible_path = "data/lat-clementine.tsv";
-local output_dir = "output/lat";
+local language = std.extVar("LANGUAGE");
+local bible_path = "data/tsv/" + language + "_usfx.tsv";
+local output_dir = "output/" + language;
 
 {
     steps: {
