@@ -50,4 +50,3 @@ class GenerateTaskData(Step):
         makedirs(output_dir)
         for s in task_specs:
             s.process(verses, output_dir)
-        assert False
