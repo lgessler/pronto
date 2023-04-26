@@ -41,12 +41,12 @@ def construct_dataset_dict(tsv_path, integer_label, max_integer_label):
 
 
 def evaluate_model(
-        model_name,
-        tsv_path,
-        output_dir=None,
-        integer_label=False,
-        max_integer_label=None,
-        lr=3e-5,
+    model_name,
+    tsv_path,
+    output_dir=None,
+    integer_label=False,
+    max_integer_label=None,
+    lr=3e-5,
 ):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     dataset_dict = construct_dataset_dict(tsv_path, integer_label, max_integer_label)
@@ -97,7 +97,9 @@ def evaluate_model(
     trainer.train()
 
     task_evaluator = evaluator("text-classification")
-    eval_results = task_evaluator.compute(model_or_pipeline=model, data=dataset_dict["test"], label_mapping=label2id, tokenizer=tokenizer)
+    eval_results = task_evaluator.compute(
+        model_or_pipeline=model, data=dataset_dict["test"], label_mapping=label2id, tokenizer=tokenizer
+    )
     return eval_results
 
 
