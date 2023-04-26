@@ -2,3 +2,7 @@ onf-parser
 ai2-tango
 beautifulsoup4
 lxml
+torch
+transformers
+datasets
+evaluate

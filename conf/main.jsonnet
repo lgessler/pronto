@@ -22,8 +22,8 @@ local output_dir = "output/" + language;
             type: "pronto.steps::generate_task_data",
             verses: { type: "ref", ref: "aligned_verses" },
             task_specs: [
-                "foo",
                 "nonpronominal_mentions",
+                "proper_noun_subject",
             ],
             output_dir: output_dir,
         }
