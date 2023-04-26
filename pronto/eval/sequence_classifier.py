@@ -50,8 +50,12 @@ def evaluate_model(
 ):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     dataset_dict = construct_dataset_dict(tsv_path, integer_label, max_integer_label)
+    possible_labels = dataset_dict.features["label"].feature.names
+    label2id = {v: i for i, v in enumerate(possible_labels)}
 
     tokenized_dataset_dict = dataset_dict.map(lambda x: tokenizer(x["text"], truncation=True), batched=True)
+    if not integer_label:
+        tokenized_dataset_dict = tokenized_dataset_dict.map(lambda x: {"label": label2id[x["label"]]})
     collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="pt")
 
     accuracy = evaluate.load("accuracy")
@@ -61,8 +65,6 @@ def evaluate_model(
         predictions = np.argmax(predictions, axis=1)
         return accuracy.compute(predictions=predictions, references=labels)
 
-    possible_labels = dataset_dict.features["label"].feature.names
-    label2id = {v: i for i, v in enumerate(possible_labels)}
     model = AutoModelForSequenceClassification.from_pretrained(
         model_name,
         num_labels=len(possible_labels),
@@ -78,7 +80,7 @@ def evaluate_model(
         learning_rate=lr,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
-        num_train_epochs=20,
+        num_train_epochs=10,
         weight_decay=0.01,
         evaluation_strategy="epoch",
         save_strategy="epoch",
@@ -97,8 +99,11 @@ def evaluate_model(
     trainer.train()
 
     task_evaluator = evaluator("text-classification")
+    test_dataset = dataset_dict["test"]
+    if not integer_label:
+        test_dataset = test_dataset.map(lambda x: {"label": label2id[x["label"]]})
     eval_results = task_evaluator.compute(
-        model_or_pipeline=model, data=dataset_dict["test"], label_mapping=label2id, tokenizer=tokenizer
+        model_or_pipeline=model, data=test_dataset, label_mapping=label2id, tokenizer=tokenizer
     )
     return eval_results
 
