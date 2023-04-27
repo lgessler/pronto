@@ -45,7 +45,7 @@ MODELS = {
 
 
 def run_sentence_mood(bible, model, task):
-    return evaluate_model(model, f"output/{bible}/{task}", epochs=10, num_proc=12)
+    return evaluate_model(model, f"output/{bible}/{task}", epochs=20, num_proc=12)
 
 
 def run_nonpronominal_mention(bible, model, task):
