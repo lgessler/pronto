@@ -119,7 +119,7 @@ def evaluate_model(
         return tokenizer_outputs
 
     tokenized_dataset_dict = dataset_dict.map(tokenize, batched=True, batch_size=batch_size, num_proc=num_proc)
-    collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="pt", max_length=max_sequence_length)
+    collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="pt")
 
     accuracy = evaluate.load("accuracy")
 
