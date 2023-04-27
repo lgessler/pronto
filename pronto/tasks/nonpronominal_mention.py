@@ -5,6 +5,7 @@ from typing import List
 from onf_parser import Mention
 
 from pronto.aligning import AlignedVerse
+from pronto.tasks._util import train_dev_test_split
 from pronto.tasks.spec import TaskSpec
 
 PRONOUN_PATTERN = re.compile(
@@ -39,9 +40,10 @@ def process_verses(verses, output_dir):
     for verse in verses:
         if not verse.is_cross_verse:
             outputs.append(process_verse(verse))
-    with open(Path(output_dir) / Path("nonpronominal_mention.tsv"), "w") as f:
-        for s, c in outputs:
-            f.write(f"{s}\t{c}\n")
+    for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
+        with open(Path(output_dir) / Path(f"nonpronominal_mention_{split}.tsv"), "w") as f:
+            for s, c in rows:
+                f.write(f"{s}\t{c}\n")
 
 
 @TaskSpec.register("nonpronominal_mention")

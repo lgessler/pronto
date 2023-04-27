@@ -1,3 +1,4 @@
+import random
 from typing import Dict, List, Tuple
 
 import nltk
@@ -70,3 +71,14 @@ def token_yield_of_tree_node(
     dfs(tree)
 
     return token_yield
+
+
+def train_dev_test_split(insts):
+    random.seed(42)
+    random.shuffle(insts)
+    i1 = int(len(insts) * 0.8)
+    i2 = int(len(insts) * 0.9)
+    train = insts[:i1]
+    dev = insts[i1:i2]
+    test = insts[i2:]
+    return train, dev, test

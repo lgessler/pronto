@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 
 from pronto.aligning import AlignedVerse
+from pronto.tasks._util import train_dev_test_split
 from pronto.tasks.spec import TaskSpec
 
 logger = getLogger(__name__)
@@ -74,9 +75,10 @@ def process_verses(
             for verse2 in negative_examples:
                 outputs.append((label, verse.verse.body, verse2.verse.body, "different"))
 
-    with open(Path(output_dir) / Path("same_sense.tsv"), "w") as f:
-        for sense, s1, s2, l in outputs:
-            f.write(f"{sense}\t{s1}\t{s2}\t{l}\n")
+    for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
+        with open(Path(output_dir) / Path(f"same_sense_{split}.tsv"), "w") as f:
+            for sense, s1, s2, l in rows:
+                f.write(f"{sense}\t{s1}\t{s2}\t{l}\n")
 
 
 @TaskSpec.register("same_sense")

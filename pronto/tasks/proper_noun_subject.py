@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List
 
 from pronto.aligning import AlignedVerse
-from pronto.tasks._util import token_yield_of_tree_node
+from pronto.tasks._util import token_yield_of_tree_node, train_dev_test_split
 from pronto.tasks.spec import TaskSpec
 
 logger = getLogger(__name__)
@@ -42,9 +42,11 @@ def process_verses(verses, output_dir, subject_tag):
             output = process_verse(verse, subject_tag)
             if output is not None:
                 outputs.append(output)
-    with open(Path(output_dir) / Path("proper_noun_subject.tsv"), "w") as f:
-        for s, l in outputs:
-            f.write(f"{s}\t{l}\n")
+
+    for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
+        with open(Path(output_dir) / Path(f"proper_noun_subject_{split}.tsv"), "w") as f:
+            for s, l in rows:
+                f.write(f"{s}\t{l}\n")
 
 
 @TaskSpec.register("proper_noun_subject")
