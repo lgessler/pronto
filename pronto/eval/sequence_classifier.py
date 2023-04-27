@@ -88,8 +88,17 @@ def evaluate_model(
     )
     possible_labels = dataset_dict.features["label"].feature.names
     label2id = {v: i for i, v in enumerate(possible_labels)}
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name,
+        num_labels=len(possible_labels),
+        id2label={i: v for i, v in enumerate(possible_labels)},
+        label2id=label2id,
+    )
+
     if extra_input_column_index is not None:
-        extra2id = {v: i for i, v in enumerate(dataset_dict.features["extra"].feature.names)}
+        extras = dataset_dict.features["extra"].feature.names
+        tokenizer.add_tokens(extras)
+        model.resize_token_embeddings(len(tokenizer))
 
     def tokenize(batch):
         args = [batch["text"]]
@@ -97,12 +106,12 @@ def evaluate_model(
             args.append(batch["text2"])
         tokenizer_outputs = tokenizer(*args, truncation=True, max_length=max_sequence_length)
         if extra_input_column_index is not None:
-            extra_ids = [extra2id[x] for x in batch["extra"]]
+            extra_ids = [tokenizer.vocab[x] for x in batch["extra"]]
             for k, vs in tokenizer_outputs.items():
                 for i, v in enumerate(vs):
                     if len(v) == max_sequence_length:
                         v.pop(-1)
-                    v.append(len(tokenizer.vocab) - extra_ids[i] - 1 if k == "input_ids" else 1)
+                    v.append(extra_ids[i] if k == "input_ids" else 1)
         return tokenizer_outputs
 
     tokenized_dataset_dict = dataset_dict.map(tokenize, batched=True, batch_size=batch_size)
@@ -117,13 +126,6 @@ def evaluate_model(
         predictions = np.argmax(predictions, axis=1)
         return accuracy.compute(predictions=predictions, references=labels)
 
-    model = AutoModelForSequenceClassification.from_pretrained(
-        model_name,
-        num_labels=len(possible_labels),
-        id2label={i: v for i, v in enumerate(possible_labels)},
-        label2id=label2id,
-    )
-
     if output_dir is None:
         output_dir = gettempdir() + os.sep + f"{tsv_path.replace(os.sep, '_')}__{model_name}"
 
@@ -132,7 +134,7 @@ def evaluate_model(
         learning_rate=lr,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
-        num_train_epochs=10,
+        num_train_epochs=5,
         weight_decay=0.01,
         evaluation_strategy="epoch",
         save_strategy="epoch",
