@@ -1,14 +1,12 @@
 import os
 from logging import getLogger
-from random import seed, shuffle
 from tempfile import gettempdir
 
 import click
 import datasets
 import evaluate
 import numpy as np
-from datasets import ClassLabel, Sequence, Value
-from evaluate import evaluator
+from datasets import ClassLabel, Value
 from transformers import (AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding, Trainer,
                           TrainingArguments)
 
@@ -16,7 +14,7 @@ logger = getLogger(__name__)
 
 
 def construct_dataset_dict(
-    tsv_path,
+    tsv_base_path,
     integer_label,
     max_integer_label,
     text_column_index,
@@ -24,62 +22,66 @@ def construct_dataset_dict(
     second_text_column_index,
     extra_input_column_index,
 ):
-    insts = []
-    with open(tsv_path, "r") as f:
-        for line in f:
-            l = line.strip()
-            if "\t" in l:
-                pieces = l.split("\t")
-                text = pieces[text_column_index]
-                label = pieces[label_column_index]
-                if integer_label:
-                    label = int(label)
-                    label = label if label < max_integer_label else max_integer_label
-                output = {"text": text, "label": label}
-                if second_text_column_index is not None:
-                    output["text2"] = pieces[second_text_column_index]
-                if extra_input_column_index is not None:
-                    output["extra"] = pieces[extra_input_column_index]
-                insts.append(output)
-    seed(42)
-    shuffle(insts)
+    def read_tsv(tsv_path):
+        insts = []
+        with open(tsv_path, "r") as f:
+            for line in f:
+                l = line.strip()
+                if "\t" in l:
+                    pieces = l.split("\t")
+                    text = pieces[text_column_index]
+                    label = pieces[label_column_index]
+                    if integer_label:
+                        label = int(label)
+                        label = label if label < max_integer_label else max_integer_label
+                    output = {"text": text, "label": label}
+                    if second_text_column_index is not None:
+                        output["text2"] = pieces[second_text_column_index]
+                    if extra_input_column_index is not None:
+                        output["extra"] = pieces[extra_input_column_index]
+                    insts.append(output)
+        return insts
 
-    dataset = datasets.Dataset.from_list(insts)
-    ddict = dataset.train_test_split(test_size=0.2)
-    ddict2 = ddict["test"].train_test_split(test_size=0.5)
-    ddict["dev"] = ddict2["train"]
-    ddict["test"] = ddict2["test"]
-    features = {
-        "text": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
-        "label": Sequence(feature=ClassLabel(names=list(set(dataset["label"])), id=None), length=-1, id=None),
-    }
+    train_insts = read_tsv(tsv_base_path + "_train.tsv")
+    dev_insts = read_tsv(tsv_base_path + "_dev.tsv")
+    test_insts = read_tsv(tsv_base_path + "_test.tsv")
+
+    all_labels = sorted(list(set([x["label"] for xs in [train_insts, dev_insts, test_insts] for x in xs])))
+    features = {"text": Value(dtype="string", id=None), "label": ClassLabel(names=all_labels, id=None)}
     if second_text_column_index is not None:
-        features["text2"] = Sequence(feature=Value(dtype="string", id=None), length=-1, id=None)
+        features["text2"] = Value(dtype="string", id=None)
     if extra_input_column_index is not None:
-        features["extra"] = Sequence(feature=ClassLabel(names=list(set(dataset["extra"])), id=None), length=-1, id=None)
+        all_extras = sorted(list(set([x["extra"] for xs in [train_insts, dev_insts, test_insts] for x in xs])))
+        features["extra"] = ClassLabel(names=all_extras, id=None)
+    features = datasets.Features(features)
 
-    ddict.features = datasets.Features(features)
+    ddict = {
+        "train": datasets.Dataset.from_list(train_insts, features=features),
+        "dev": datasets.Dataset.from_list(dev_insts, features=features),
+        "test": datasets.Dataset.from_list(test_insts, features=features),
+    }
+    ddict = datasets.DatasetDict(ddict)
     return ddict
 
 
 def evaluate_model(
     model_name,
-    tsv_path,
+    tsv_base_path,
     output_dir=None,
     integer_label=False,
     max_integer_label=None,
-    lr=3e-5,
+    lr=2e-5,
     batch_size=16,
     epochs=10,
     text_column_index=0,
     label_column_index=1,
     second_text_column_index=None,
     extra_input_column_index=None,
-    max_sequence_length=None,
+    max_sequence_length=512,
 ):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     dataset_dict = construct_dataset_dict(
-        tsv_path,
+        tsv_base_path,
         integer_label,
         max_integer_label,
         text_column_index,
@@ -87,7 +89,7 @@ def evaluate_model(
         second_text_column_index,
         extra_input_column_index,
     )
-    possible_labels = dataset_dict.features["label"].feature.names
+    possible_labels = dataset_dict["train"].features["label"].names
     label2id = {v: i for i, v in enumerate(possible_labels)}
     model = AutoModelForSequenceClassification.from_pretrained(
         model_name,
@@ -97,7 +99,7 @@ def evaluate_model(
     )
 
     if extra_input_column_index is not None:
-        extras = dataset_dict.features["extra"].feature.names
+        extras = dataset_dict["train"].features["extra"].names
         tokenizer.add_tokens(extras)
         model.resize_token_embeddings(len(tokenizer))
 
@@ -107,7 +109,7 @@ def evaluate_model(
             args.append(batch["text2"])
         tokenizer_outputs = tokenizer(*args, truncation=True, max_length=max_sequence_length)
         if extra_input_column_index is not None:
-            extra_ids = [tokenizer.vocab[x] for x in batch["extra"]]
+            extra_ids = [tokenizer.vocab[extras[x]] for x in batch["extra"]]
             for k, vs in tokenizer_outputs.items():
                 for i, v in enumerate(vs):
                     if len(v) == max_sequence_length:
@@ -115,10 +117,8 @@ def evaluate_model(
                     v.append(extra_ids[i] if k == "input_ids" else 1)
         return tokenizer_outputs
 
-    tokenized_dataset_dict = dataset_dict.map(tokenize, batched=True, batch_size=batch_size)
-    if not integer_label:
-        tokenized_dataset_dict = tokenized_dataset_dict.map(lambda x: {"label": label2id[x["label"]]})
-    collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="pt")
+    tokenized_dataset_dict = dataset_dict.map(tokenize, batched=True, batch_size=batch_size, num_proc=8)
+    collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="pt", max_length=max_sequence_length)
 
     accuracy = evaluate.load("accuracy")
 
@@ -128,7 +128,7 @@ def evaluate_model(
         return accuracy.compute(predictions=predictions, references=labels)
 
     if output_dir is None:
-        output_dir = gettempdir() + os.sep + f"{tsv_path.replace(os.sep, '_')}__{model_name}"
+        output_dir = gettempdir() + os.sep + f"{tsv_base_path.replace(os.sep, '_')}__{model_name}"
 
     training_args = TrainingArguments(
         output_dir=output_dir,
@@ -153,19 +153,16 @@ def evaluate_model(
     )
     trainer.train()
 
-    task_evaluator = evaluator("text-classification")
-    test_dataset = dataset_dict["test"]
-    if not integer_label:
-        test_dataset = test_dataset.map(lambda x: {"label": label2id[x["label"]]})
-    eval_results = task_evaluator.compute(
-        model_or_pipeline=model, data=test_dataset, label_mapping=label2id, tokenizer=tokenizer
+    predictions = trainer.predict(tokenized_dataset_dict["test"])
+    test_acc = accuracy.compute(
+        predictions=predictions.predictions.argmax(-1), references=tokenized_dataset_dict["test"]["label"]
     )
-    return eval_results
+    return {"accuracy": test_acc, "predictions": predictions, "test_instances": tokenized_dataset_dict["test"]}
 
 
 @click.command
 @click.argument("model_name")
-@click.argument("tsv_path")
+@click.argument("tsv_base_path")
 @click.option("-o", "--output-dir", default=None)
 @click.option("--integer-label/--no-integer-label", default=False, help="Set to true if labels are integers")
 @click.option("--max-integer-label", default=None, type=int, help="Maximum value for labels if they are integers")
@@ -184,7 +181,7 @@ def evaluate_model(
 @click.option("--max-sequence-length", default=512, type=int)
 def run(
     model_name,
-    tsv_path,
+    tsv_base_path,
     output_dir,
     integer_label,
     max_integer_label,
