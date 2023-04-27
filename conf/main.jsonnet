@@ -22,7 +22,7 @@ local output_dir = "output/" + language;
             type: "pronto.steps::generate_task_data",
             verses: { type: "ref", ref: "aligned_verses" },
             task_specs: [
-                "nonpronominal_mentions",
+                "nonpronominal_mention",
                 "proper_noun_subject",
                 "same_sense",
                 "sentence_mood",
