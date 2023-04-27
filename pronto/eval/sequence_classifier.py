@@ -70,6 +70,7 @@ def evaluate_model(
     output_dir=None,
     integer_label=False,
     max_integer_label=None,
+    num_proc=4,
     lr=2e-5,
     batch_size=16,
     epochs=10,
@@ -117,7 +118,7 @@ def evaluate_model(
                     v.append(extra_ids[i] if k == "input_ids" else 1)
         return tokenizer_outputs
 
-    tokenized_dataset_dict = dataset_dict.map(tokenize, batched=True, batch_size=batch_size, num_proc=8)
+    tokenized_dataset_dict = dataset_dict.map(tokenize, batched=True, batch_size=batch_size, num_proc=num_proc)
     collator = DataCollatorWithPadding(tokenizer=tokenizer, return_tensors="pt", max_length=max_sequence_length)
 
     accuracy = evaluate.load("accuracy")
@@ -166,6 +167,7 @@ def evaluate_model(
 @click.option("-o", "--output-dir", default=None)
 @click.option("--integer-label/--no-integer-label", default=False, help="Set to true if labels are integers")
 @click.option("--max-integer-label", default=None, type=int, help="Maximum value for labels if they are integers")
+@click.option("--num-proc", default=4, type=int, help="Processors to use for dataset mapping")
 @click.option("--lr", default=3e-5, type=float, help="Learning rate")
 @click.option("--batch-size", default=16, type=int, help="Batch size")
 @click.option("--epochs", default=10, type=int, help="Number of training epochs")
@@ -185,6 +187,7 @@ def run(
     output_dir,
     integer_label,
     max_integer_label,
+    num_proc,
     lr,
     batch_size,
     epochs,
