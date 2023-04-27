@@ -44,7 +44,7 @@ def process_verses(verses, output_dir):
             f.write(f"{s}\t{c}\n")
 
 
-@TaskSpec.register("nonpronominal_mentions")
-class NonpronominalMentions(TaskSpec):
+@TaskSpec.register("nonpronominal_mention")
+class NonpronominalMention(TaskSpec):
     def process(self, verses: List[AlignedVerse], output_dir: str) -> None:
         process_verses(verses, output_dir)
