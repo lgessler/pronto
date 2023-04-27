@@ -24,6 +24,7 @@ local output_dir = "output/" + language;
             task_specs: [
                 "nonpronominal_mentions",
                 "proper_noun_subject",
+                "same_sense",
                 "sentence_mood",
             ],
             output_dir: output_dir,

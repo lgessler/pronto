@@ -23,7 +23,7 @@ def process_verse(verse, subject_tag):
     parsed_tree = first_sentence.tree.parsed_tree
     subject_tokens = token_yield_of_tree_node(parsed_tree, subject_tag)
     if len(subject_tokens) == 0:
-        logger.warning(f"Couldn't find a subject for verse: {(verse.book, verse.chapter, verse.verse_id)}")
+        logger.debug(f"Couldn't find a subject for verse: {(verse.book, verse.chapter, verse.verse_id)}")
         return None
     if not is_contiguous([x[0] for x in subject_tokens]):
         logger.warning(
