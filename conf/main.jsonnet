@@ -26,6 +26,7 @@ local output_dir = "output/" + language;
                 "proper_noun_subject",
                 "same_sense",
                 "sentence_mood",
+                "same_arg_count",
             ],
             output_dir: output_dir,
         }
