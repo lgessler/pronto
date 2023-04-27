@@ -70,6 +70,7 @@ def evaluate_model(
     max_integer_label=None,
     lr=3e-5,
     batch_size=16,
+    epochs=10,
     text_column_index=0,
     label_column_index=1,
     second_text_column_index=None,
@@ -134,7 +135,7 @@ def evaluate_model(
         learning_rate=lr,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
-        num_train_epochs=5,
+        num_train_epochs=epochs,
         weight_decay=0.01,
         evaluation_strategy="epoch",
         save_strategy="epoch",
@@ -170,6 +171,7 @@ def evaluate_model(
 @click.option("--max-integer-label", default=None, type=int, help="Maximum value for labels if they are integers")
 @click.option("--lr", default=3e-5, type=float, help="Learning rate")
 @click.option("--batch-size", default=16, type=int, help="Batch size")
+@click.option("--epochs", default=10, type=int, help="Number of training epochs")
 @click.option("--text-column-index", default=0, type=int, help="TSV column which contains text")
 @click.option("--label-column-index", default=1, type=int, help="TSV column which contains sequence label")
 @click.option(
@@ -188,6 +190,7 @@ def run(
     max_integer_label,
     lr,
     batch_size,
+    epochs,
     text_column_index,
     label_column_index,
     second_text_column_index,
