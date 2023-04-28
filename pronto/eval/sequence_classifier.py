@@ -73,6 +73,7 @@ def evaluate_model(
     num_proc=4,
     lr=2e-5,
     batch_size=16,
+    gradient_accumulation_steps=1,
     epochs=10,
     text_column_index=0,
     label_column_index=1,
@@ -137,6 +138,7 @@ def evaluate_model(
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
         num_train_epochs=epochs,
+        gradient_accumulation_steps=gradient_accumulation_steps,
         weight_decay=0.01,
         evaluation_strategy="epoch",
         save_strategy="epoch",
@@ -170,6 +172,12 @@ def evaluate_model(
 @click.option("--num-proc", default=4, type=int, help="Processors to use for dataset mapping")
 @click.option("--lr", default=3e-5, type=float, help="Learning rate")
 @click.option("--batch-size", default=16, type=int, help="Batch size")
+@click.option(
+    "--gradient-accumulation-steps",
+    default=1,
+    type=int,
+    help="Number of batches to compute gradient with before optimizing",
+)
 @click.option("--epochs", default=10, type=int, help="Number of training epochs")
 @click.option("--text-column-index", default=0, type=int, help="TSV column which contains text")
 @click.option("--label-column-index", default=1, type=int, help="TSV column which contains sequence label")
@@ -190,6 +198,7 @@ def run(
     num_proc,
     lr,
     batch_size,
+    gradient_accumulation_steps,
     epochs,
     text_column_index,
     label_column_index,
