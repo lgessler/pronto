@@ -2,16 +2,13 @@ import json
 
 from pronto.eval.sequence_classifier import evaluate_model
 
-ALL_MODELS = ["bert-base-multilingual-cased"]
+ALL_MODELS = ["bert-base-multilingual-cased", "bert-large-multilingual-cased", "xlm-roberta-base"]
 MODELS = {
-    "ind": [
-        "lgessler/microbert-indonesian-m",
-        "lgessler/microbert-indonesian-mx",
-        # "cahya/bert-base-indonesian-522M"
-    ],
+    "ind": ["lgessler/microbert-indonesian-m", "lgessler/microbert-indonesian-mx", "cahya/bert-base-indonesian-522M"],
     "tam2017": [
         "lgessler/microbert-tamil-m",
         "lgessler/microbert-tamil-mx",
+        "l3cube-pune/tamil-bert",
     ],
     "copshc": [
         "lgessler/microbert-coptic-m",
@@ -29,18 +26,18 @@ MODELS = {
         "lgessler/microbert-wolof-m",
         "lgessler/microbert-wolof-mx",
     ],
-    "frasbl": [],
-    "jpn1965": [],
-    # "engwebster": [
-    #     "roberta-base",
-    #     "bert-base-cased",
-    #     "distilbert-base-cased",
-    # ],
-    # "engerv": [
-    #     "roberta-base",
-    #     "bert-base-cased",
-    #     "distilbert-base-cased",
-    # ],
+    "frasbl": ["camembert-base"],
+    "jpn1965": ["cl-tohoku/bert-base-japanese"],
+    "engwebster": [
+        "roberta-base",
+        "bert-base-cased",
+        "distilbert-base-cased",
+    ],
+    "engerv": [
+        "roberta-base",
+        "bert-base-cased",
+        "distilbert-base-cased",
+    ],
 }
 
 
