@@ -130,7 +130,7 @@ def evaluate_model(
         return accuracy.compute(predictions=predictions, references=labels)
 
     if output_dir is None:
-        output_dir = gettempdir() + os.sep + f"{tsv_base_path.replace(os.sep, '_')}__{model_name}"
+        output_dir = "/home/lg876/tmp" + os.sep + f"{tsv_base_path.replace(os.sep, '_')}__{model_name}"
 
     training_args = TrainingArguments(
         output_dir=output_dir,
