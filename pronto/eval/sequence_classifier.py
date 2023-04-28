@@ -1,5 +1,6 @@
 import os
 from logging import getLogger
+from shutil import rmtree
 from tempfile import gettempdir
 
 import click
@@ -129,8 +130,10 @@ def evaluate_model(
         predictions = np.argmax(predictions, axis=1)
         return accuracy.compute(predictions=predictions, references=labels)
 
+    temp_dir = False
     if output_dir is None:
-        output_dir = "/home/lg876/tmp" + os.sep + f"{tsv_base_path.replace(os.sep, '_')}__{model_name}"
+        output_dir = gettempdir() + os.sep + f"{tsv_base_path.replace(os.sep, '_')}__{model_name}"
+        temp_dir = True
 
     training_args = TrainingArguments(
         output_dir=output_dir,
@@ -160,6 +163,8 @@ def evaluate_model(
     test_acc = accuracy.compute(
         predictions=predictions.predictions.argmax(-1), references=tokenized_dataset_dict["test"]["label"]
     )
+    if temp_dir:
+        shutil.rmtree(output_dir)
     return {"accuracy": test_acc, "predictions": predictions, "test_instances": tokenized_dataset_dict["test"]}
 
 
