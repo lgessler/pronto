@@ -2,7 +2,7 @@ import json
 
 from pronto.eval.sequence_classifier import evaluate_model
 
-ALL_MODELS = ["bert-base-multilingual-cased", "bert-large-multilingual-cased", "xlm-roberta-base"]
+ALL_MODELS = ["bert-base-multilingual-cased", "xlm-roberta-base", "xlm-roberta-large"]
 MODELS = {
     "ind": ["lgessler/microbert-indonesian-m", "lgessler/microbert-indonesian-mx", "cahya/bert-base-indonesian-522M"],
     "tam2017": [
