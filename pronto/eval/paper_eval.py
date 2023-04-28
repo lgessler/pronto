@@ -1,5 +1,4 @@
 import json
-import os
 
 from pronto.eval.sequence_classifier import evaluate_model
 
@@ -43,43 +42,93 @@ MODELS = {
 
 
 def run_sentence_mood(bible, model, task):
-    return evaluate_model(model, f"output/{bible}/{task}", epochs=20, num_proc=4)
+    if model in MULTI_MODELS:
+        return evaluate_model(
+            model, f"output/{bible}/{task}", epochs=20, num_proc=12, batch_size=8, gradient_accumulation_steps=2
+        )
+    else:
+        return evaluate_model(model, f"output/{bible}/{task}", epochs=20, num_proc=12)
 
 
 def run_nonpronominal_mention(bible, model, task):
-    return evaluate_model(
-        model, f"output/{bible}/{task}", epochs=10, integer_label=True, max_integer_label=3, num_proc=4
-    )
+    if model in MULTI_MODELS:
+        return evaluate_model(
+            model,
+            f"output/{bible}/{task}",
+            epochs=10,
+            integer_label=True,
+            max_integer_label=3,
+            num_proc=12,
+            batch_size=8,
+            gradient_accumulation_steps=2,
+        )
+    else:
+        return evaluate_model(
+            model, f"output/{bible}/{task}", epochs=10, integer_label=True, max_integer_label=3, num_proc=12
+        )
 
 
 def run_proper_noun_subject(bible, model, task):
-    return evaluate_model(model, f"output/{bible}/{task}", epochs=10, num_proc=4)
+    if model in MULTI_MODELS:
+        return evaluate_model(
+            model, f"output/{bible}/{task}", epochs=10, num_proc=12, batch_size=8, gradient_accumulation_steps=2
+        )
+    else:
+        return evaluate_model(model, f"output/{bible}/{task}", epochs=10, num_proc=12)
 
 
 def run_same_sense(bible, model, task):
-    return evaluate_model(
-        model,
-        f"output/{bible}/{task}",
-        epochs=10,
-        text_column_index=1,
-        second_text_column_index=2,
-        extra_input_column_index=0,
-        label_column_index=3,
-        num_proc=4,
-    )
+    if model in MULTI_MODELS:
+        return evaluate_model(
+            model,
+            f"output/{bible}/{task}",
+            epochs=10,
+            text_column_index=1,
+            second_text_column_index=2,
+            extra_input_column_index=0,
+            label_column_index=3,
+            num_proc=12,
+            batch_size=8,
+            gradient_accumulation_steps=2,
+        )
+    else:
+        return evaluate_model(
+            model,
+            f"output/{bible}/{task}",
+            epochs=10,
+            text_column_index=1,
+            second_text_column_index=2,
+            extra_input_column_index=0,
+            label_column_index=3,
+            num_proc=12,
+        )
 
 
 def run_same_arg_count(bible, model, task):
-    return evaluate_model(
-        model,
-        f"output/{bible}/{task}",
-        epochs=10,
-        text_column_index=1,
-        second_text_column_index=2,
-        extra_input_column_index=0,
-        label_column_index=3,
-        num_proc=4,
-    )
+    if model in MULTI_MODELS:
+        return evaluate_model(
+            model,
+            f"output/{bible}/{task}",
+            epochs=10,
+            text_column_index=1,
+            second_text_column_index=2,
+            extra_input_column_index=0,
+            label_column_index=3,
+            num_proc=12,
+            batch_size=8,
+            gradient_accumulation_steps=2,
+        )
+    else:
+        return evaluate_model(
+            model,
+            f"output/{bible}/{task}",
+            epochs=10,
+            text_column_index=1,
+            second_text_column_index=2,
+            extra_input_column_index=0,
+            label_column_index=3,
+            num_proc=12,
+        )
 
 
 TASKS = {
@@ -109,13 +158,11 @@ def run_trial(bible, model, task):
 
 
 def run():
-    global MODELS
-    MODELS = {k: v for k, v in MODELS.items() if k == os.environ["BIBLE"]}
     for bible, models in MODELS.items():
         for task in TASKS.keys():
             for model in models:
                 run_trial(bible, model, task)
-            for model in ALL_MODELS:
+            for model in MULTI_MODELS:
                 run_trial(bible, model, task)
 
 
