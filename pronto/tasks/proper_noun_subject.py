@@ -31,7 +31,7 @@ def process_verse(verse, subject_tag):
         )
         return None
 
-    subject_is_proper_noun = any(t[1][-1] == "NNP" for t in subject_tokens)
+    subject_is_proper_noun = any(t[1][-1] in ["NNP", "NNPS"] for t in subject_tokens)
     return verse.verse.body, 1 if subject_is_proper_noun else 0
 
 
