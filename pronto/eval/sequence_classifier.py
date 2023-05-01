@@ -103,7 +103,14 @@ def evaluate_model(
 
     if extra_input_column_index is not None:
         extras = dataset_dict["train"].features["extra"].names
+        before_len = len(tokenizer.vocab)
         tokenizer.add_tokens(extras)
+        # workaround for Japanese
+        # there are probably ways in which this is unsafe/incorrect, but they do not matter for us
+        if len(tokenizer.vocab) == before_len:
+            begin = max(tokenizer.vocab.values()) + 1
+            for i, l in enumerate(extras):
+                tokenizer.vocab[l] = begin + i
         model.resize_token_embeddings(len(tokenizer))
 
     def tokenize(batch):
