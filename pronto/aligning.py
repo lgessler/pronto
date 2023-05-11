@@ -102,7 +102,9 @@ def _index_bible_data(bible_data: List[Book]) -> Dict[str, Dict[str, Dict[str, V
     return index
 
 
-def align_verses(ontonotes_data: List[Tuple[str, List[Section]]], bible_data: List[Book]) -> List[AlignedVerse]:
+def align_verses(
+    ontonotes_data: List[Tuple[str, List[Section]]], bible_data: List[Book], threshold: int
+) -> List[AlignedVerse]:
     ontonotes_verse_index = _index_ontonotes(ontonotes_data)
     bible_verse_index = _index_bible_data(bible_data)
 
@@ -148,4 +150,6 @@ def align_verses(ontonotes_data: List[Tuple[str, List[Section]]], bible_data: Li
                     misses.append((chapter, book, verse_id))
 
     logger.info(f"Aligned {len(aligned)} verses; failed to align {len(misses)} from OntoNotes verses")
+    if len(aligned) < threshold:
+        raise ValueError("Aborting run due to insufficient aligned verse count")
     return aligned

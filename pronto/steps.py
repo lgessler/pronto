@@ -36,8 +36,10 @@ class AlignVerses(Step):
     CACHEABLE = True
     FORMAT = DillFormat()
 
-    def run(self, ontonotes_data: List[Tuple[str, List[Section]]], bible_data: List[Book]) -> List[AlignedVerse]:
-        return align_verses(ontonotes_data, bible_data)
+    def run(
+        self, ontonotes_data: List[Tuple[str, List[Section]]], bible_data: List[Book], threshold: int = 500
+    ) -> List[AlignedVerse]:
+        return align_verses(ontonotes_data, bible_data, threshold)
 
 
 @Step.register("pronto.steps::generate_task_data")
