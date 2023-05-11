@@ -7,3 +7,5 @@ transformers
 datasets
 evaluate
 scikit-learn
+ipadic
+fugashi
