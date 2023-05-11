@@ -151,5 +151,5 @@ def align_verses(
 
     logger.info(f"Aligned {len(aligned)} verses; failed to align {len(misses)} from OntoNotes verses")
     if len(aligned) < threshold:
-        raise ValueError("Aborting run due to insufficient aligned verse count")
+        raise ValueError(f"Aborting run due to insufficient aligned verse count: {len(aligned)}")
     return aligned
