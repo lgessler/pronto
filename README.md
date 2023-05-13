@@ -17,5 +17,12 @@ For a full description of this resource, see [our paper](./pronto.pdf).
 Please see [our registry](RELEASE_v0.1.md) for a list of Bibles included in the PrOnto release.
 As of version 0.1, this includes 1051 Bible translations in 859 distinct languages.
 
+# Usage
+You may use the datasets however you like, though we do include 
+[a sequence classification module](./pronto/eval/sequence_classifier.py) which is ready to use with the data for our
+5 tasks. You may invoke it with `python -m pronto.eval.sequence_classifier`. See 
+[here](https://github.com/lgessler/pronto/blob/master/pronto/eval/paper_eval.py#L44L131) for sensible defaults on
+each task for its options.
+
 # Development
 For information on how to build a PrOnto dataset, see [BUILD](./BUILD.md).
