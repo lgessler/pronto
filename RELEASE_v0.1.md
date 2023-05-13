@@ -1,3 +1,10 @@
+# PrOnto v0.1
+Each line below corresponds to a PrOnto dataset that was generated using a permissively licensed Bible translation
+sourced from ebible.org. In each line, you will find a download link for the PrOnto dataset; the name of the language;
+the language's Ethnologue code; the name of the Bible translation; and the license it was made available under.
+For more information on each license, please see the ebible.org page that is hyperlinked from the Bible translation's 
+name.
+# Datasets
 * [_(download)_](https://drive.google.com/file/d/1RXMkRDIU1m58cyABpKtBqujmDDrx4M4a/view?usp=share_link) **'Auhelawa ([kud](https://www.ethnologue.com/language/kud/))** – ['Auhelawa NT](https://ebible.org/details.php?id=kud), Creative Commons
 * [_(download)_](https://drive.google.com/file/d/143rhvU3UII4T9918QXdR2TvUp9caAwR6/view?usp=share_link) **Abau ([aau](https://www.ethnologue.com/language/aau/))** – [Abau NT](https://ebible.org/details.php?id=aau), Creative Commons
 * [_(download)_](https://drive.google.com/file/d/1GnaQpSYFu6mONYptivrpZiGdHz6NIXUS/view?usp=share_link) **Achi ([acr](https://www.ethnologue.com/language/acr/))** – [Achi Rabinal NT (new orthography)](https://ebible.org/details.php?id=acrNNT), Creative Commons
