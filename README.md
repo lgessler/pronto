@@ -11,6 +11,8 @@ In addition to these premade datasets, you may also provide your own Bible trans
 generation code in order to generate a dataset for your own target language. No annotation required!
 See [BUILD](./BUILD.md) for details.
 
+For a full description of this resource, see [our paper](./pronto.pdf)
+
 # Download
 Please see [our registry](RELEASE_v0.1.md) for a list of Bibles included in the PrOnto release.
 As of version 0.1, this includes 1051 Bible translations in 859 distinct languages.
