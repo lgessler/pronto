@@ -1,3 +1,10 @@
+# PrOnto
+TODO
+
+# Download
+Please see [our registry](RELEASE_v0.1.md) for a list of Bibles included in the PrOnto release.
+As of version 0.1, this includes 1051 Bible translations in 859 distinct languages.
+
 # Build
 ## Open-access eBible.org Corpus
 1. Ensure OntoNotes is located at `data/ontonotes`.
