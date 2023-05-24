@@ -1,5 +1,5 @@
 # PrOnto
-PrOnto is a resource intended for pretrained language model evaluation that is extensible to any language with a 
+[PrOnto](https://github.com/lgessler/pronto/blob/master/RELEASE_v0.1.md) is a resource intended for pretrained language model evaluation that is extensible to any language with a 
 New Testament translation. **No manual annotation required**!
 
 PrOnto v0.1 comes with 1051 datasets from all of ebible.org's permissively-licensed Bible translations, which span
