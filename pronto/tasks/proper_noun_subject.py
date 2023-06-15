@@ -43,6 +43,9 @@ def process_verses(verses, output_dir, subject_tag):
             if output is not None:
                 outputs.append(output)
 
+    with open(Path(output_dir) / Path(f"proper_noun_subject.tsv"), "w") as f:
+        for s, l in outputs:
+            f.write(f"{s}\t{l}\n")
     for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
         with open(Path(output_dir) / Path(f"proper_noun_subject_{split}.tsv"), "w") as f:
             for s, l in rows:

@@ -40,6 +40,10 @@ def process_verses(verses, output_dir):
     for verse in verses:
         if not verse.is_cross_verse:
             outputs.append(process_verse(verse))
+
+    with open(Path(output_dir) / Path(f"nonpronominal_mention.tsv"), "w") as f:
+        for s, c in outputs:
+            f.write(f"{s}\t{c}\n")
     for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
         with open(Path(output_dir) / Path(f"nonpronominal_mention_{split}.tsv"), "w") as f:
             for s, c in rows:
