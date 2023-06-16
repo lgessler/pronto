@@ -41,9 +41,9 @@ def process_verse(verse, pipeline):
 
     nsubj = [w for w in sentence if w["deprel"] == "nsubj"]
     if len(nsubj) == 0:
-        return verse.verse.body, 0
+        return verse.verse.body, 0, verse.reference
     elif nsubj[0]["upos"] == "PROPN":
-        return verse.verse.body, 1
+        return verse.verse.body, 1, verse.reference
     else:
         prev_children = [nsubj[0]]
 
@@ -52,10 +52,10 @@ def process_verse(verse, pipeline):
         if len(next_children) == 0:
             break
         if any(word_index[w]["upos"] == "PROPN" for w in next_children):
-            return verse.verse.body, 1
+            return verse.verse.body, 1, verse.reference
         prev_children = next_children
 
-    return verse.verse.body, 0
+    return verse.verse.body, 0, verse.reference
 
 
 def process_verses(verses, output_dir, pipeline):
@@ -66,12 +66,12 @@ def process_verses(verses, output_dir, pipeline):
             if output is not None:
                 outputs.append(output)
     with open(Path(output_dir) / Path(f"ud_proper_noun_subject.tsv"), "w") as f:
-        for s, c in outputs:
-            f.write(f"{s}\t{c}\n")
+        for s, c, r in outputs:
+            f.write(f"{s}\t{c}\t{r}\n")
     for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
         with open(Path(output_dir) / Path(f"ud_proper_noun_subject_{split}.tsv"), "w") as f:
-            for s, c in rows:
-                f.write(f"{s}\t{c}\n")
+            for s, c, r in rows:
+                f.write(f"{s}\t{c}\t{r}\n")
 
 
 @TaskSpec.register("ud_proper_noun_subject")

@@ -22,7 +22,7 @@ def process_verse(verse, pipeline):
             ):
                 mentions += 1
 
-    return verse.verse.body, mentions
+    return verse.verse.body, mentions, verse.reference
 
 
 def process_verses(verses, output_dir, pipeline):
@@ -31,12 +31,12 @@ def process_verses(verses, output_dir, pipeline):
         if not verse.is_cross_verse:
             outputs.append(process_verse(verse, pipeline))
     with open(Path(output_dir) / Path(f"ud_nonpronominal_mention.tsv"), "w") as f:
-        for s, c in outputs:
-            f.write(f"{s}\t{c}\n")
+        for s, c, r in outputs:
+            f.write(f"{s}\t{c}\t{r}\n")
     for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
         with open(Path(output_dir) / Path(f"ud_nonpronominal_mention_{split}.tsv"), "w") as f:
-            for s, c in rows:
-                f.write(f"{s}\t{c}\n")
+            for s, c, r in rows:
+                f.write(f"{s}\t{c}\t{r}\n")
 
 
 @TaskSpec.register("ud_nonpronominal_mention")
