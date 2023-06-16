@@ -54,6 +54,10 @@ class AlignedVerse:
                     mentions.append(leaf.coref)
         return mentions
 
+    @property
+    def reference(self):
+        return f"{self.book} {self.chapter}:{self.verse_id}"
+
 
 def _parse_ontonotes_time(s: str):
     pieces = s.split(":")

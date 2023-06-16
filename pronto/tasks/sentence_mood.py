@@ -25,7 +25,7 @@ def process_verse(verse):
     else:
         return None
 
-    return verse.verse.body, stype
+    return verse.verse.body, stype, verse.reference
 
 
 def process_verses(verses, output_dir):
@@ -38,8 +38,8 @@ def process_verses(verses, output_dir):
 
     for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
         with open(Path(output_dir) / Path(f"sentence_mood_{split}.tsv"), "w") as f:
-            for s, l in rows:
-                f.write(f"{s}\t{l}\n")
+            for s, l, r in rows:
+                f.write(f"{s}\t{l}\t{r}\n")
 
 
 @TaskSpec.register("sentence_mood")

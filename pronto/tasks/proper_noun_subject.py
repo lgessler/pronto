@@ -32,7 +32,7 @@ def process_verse(verse, subject_tag):
         return None
 
     subject_is_proper_noun = any(t[1][-1] in ["NNP", "NNPS"] for t in subject_tokens)
-    return verse.verse.body, 1 if subject_is_proper_noun else 0
+    return verse.verse.body, 1 if subject_is_proper_noun else 0, verse.reference
 
 
 def process_verses(verses, output_dir, subject_tag):
@@ -44,12 +44,12 @@ def process_verses(verses, output_dir, subject_tag):
                 outputs.append(output)
 
     with open(Path(output_dir) / Path(f"proper_noun_subject.tsv"), "w") as f:
-        for s, l in outputs:
-            f.write(f"{s}\t{l}\n")
+        for s, l, r in outputs:
+            f.write(f"{s}\t{l}\t{r}\n")
     for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
         with open(Path(output_dir) / Path(f"proper_noun_subject_{split}.tsv"), "w") as f:
-            for s, l in rows:
-                f.write(f"{s}\t{l}\n")
+            for s, l, r in rows:
+                f.write(f"{s}\t{l}\t{r}\n")
 
 
 @TaskSpec.register("proper_noun_subject")

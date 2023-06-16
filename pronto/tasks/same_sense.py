@@ -71,14 +71,16 @@ def process_verses(
                 other_sense_verses, min(config.negative_per_positive * len(positive_examples), len(positive_examples))
             )
             for verse2 in positive_examples:
-                outputs.append((label, verse.verse.body, verse2.verse.body, "same"))
+                outputs.append((label, verse.verse.body, verse2.verse.body, "same", verse.reference, verse2.reference))
             for verse2 in negative_examples:
-                outputs.append((label, verse.verse.body, verse2.verse.body, "different"))
+                outputs.append(
+                    (label, verse.verse.body, verse2.verse.body, "different", verse.reference, verse2.reference)
+                )
 
     for split, rows in zip(["train", "dev", "test"], train_dev_test_split(outputs)):
         with open(Path(output_dir) / Path(f"same_sense_{split}.tsv"), "w") as f:
-            for sense, s1, s2, l in rows:
-                f.write(f"{sense}\t{s1}\t{s2}\t{l}\n")
+            for sense, s1, s2, l, r1, r2 in rows:
+                f.write(f"{sense}\t{s1}\t{s2}\t{l}\t{r1}\t{r2}\n")
 
 
 @TaskSpec.register("same_sense")
