@@ -12,6 +12,15 @@ logger = getLogger(__name__)
 
 
 def build_index(config, verses: List[AlignedVerse]):
+    def should_be_counted(arg_name):
+        if "LINK-" in arg_name:
+            return False
+        if arg_name == "v":
+            return False
+        if not config.include_adjuncts and "-" in arg_name:
+            return False
+        return True
+
     # mapping from sense labels to verses which contain them
     index = defaultdict(lambda: defaultdict(list))
 
@@ -32,7 +41,7 @@ def build_index(config, verses: List[AlignedVerse]):
             continue
 
         for sense in sense_annotations:
-            arg_count = len([a for a in sense.args if "LINK-" not in a and a != "v"])
+            arg_count = len([a for a in sense.args if should_be_counted(a)])
             if verse not in index[sense.label][arg_count]:
                 index[sense.label][arg_count].append(verse)
 
@@ -96,11 +105,13 @@ class SameArgCount(TaskSpec):
         allow_duplicate_senses_in_verse: bool = True,
         negative_per_positive: int = 1,
         positive_pairs_per_instance: int = 1,
+        include_adjuncts: bool = True,
     ):
         self.singleton_only = singleton_only
         self.allow_duplicate_senses_in_verse = allow_duplicate_senses_in_verse
         self.negative_per_positive = negative_per_positive
         self.positive_pairs_per_instance = positive_pairs_per_instance
+        self.include_adjuncts = include_adjuncts
 
     def process(self, verses: List[AlignedVerse], output_dir: str) -> None:
         process_verses(
