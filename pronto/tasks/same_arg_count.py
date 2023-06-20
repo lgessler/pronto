@@ -32,8 +32,9 @@ def build_index(config, verses: List[AlignedVerse]):
             continue
 
         for sense in sense_annotations:
-            if verse not in index[sense.label][len(sense.args)]:
-                index[sense.label][len(sense.args)].append(verse)
+            arg_count = len([a for a in sense.args if "LINK-" not in a and a != "v"])
+            if verse not in index[sense.label][arg_count]:
+                index[sense.label][arg_count].append(verse)
 
     return index
 
